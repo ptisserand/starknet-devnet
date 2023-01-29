@@ -265,6 +265,11 @@ def parse_args(raw_args: List[str]):
         help=f"Specify the gas price in wei per gas unit; defaults to {DEFAULT_GAS_PRICE:g}",
     )
     parser.add_argument(
+        "--allow-max-fee-zero",
+        action="store_true",
+        help="Allow transaction with max fee equal zero"
+    )
+    parser.add_argument(
         "--timeout",
         "-t",
         action=NonNegativeAction,
@@ -326,6 +331,7 @@ class DevnetConfig:
         self.seed = self.args.seed
         self.start_time = self.args.start_time
         self.gas_price = self.args.gas_price
+        self.allow_max_fee_zero = self.args.allow_max_fee_zero
         self.lite_mode = self.args.lite_mode
         self.account_class = self.args.account_class
         self.hide_predeployed_accounts = self.args.hide_predeployed_accounts
