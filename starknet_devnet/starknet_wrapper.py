@@ -58,7 +58,7 @@ from .block_info_generator import BlockInfoGenerator
 from .blocks import DevnetBlocks
 from .blueprints.rpc.structures.types import Felt
 from .chargeable_account import ChargeableAccount
-from .constants import DUMMY_STATE_ROOT, OZ_ACCOUNT_CLASS_HASH
+from .constants import DUMMY_STATE_ROOT, LEGACY_RPC_TX_VERSION, OZ_ACCOUNT_CLASS_HASH
 from .devnet_config import DevnetConfig
 from .fee_token import FeeToken
 from .forked_state import get_forked_starknet
@@ -435,7 +435,11 @@ class StarknetWrapper:
     async def invoke(self, external_tx: InvokeFunction):
         """Perform invoke according to specifications in `transaction`."""
         state = self.get_state()
-
+        if external_tx.version != LEGACY_RPC_TX_VERSION and external_tx.max_fee == 0 and not self.config.allow_max_fee_zero:
+            raise StarknetDevnetException(
+                code=StarknetErrorCode.OUT_OF_RANGE_FEE,
+                message=f"max_fee == 0 is not supported.",
+            )
         async with self.__get_transaction_handler() as tx_handler:
             tx_handler.internal_tx = InternalInvokeFunction.from_external(
                 external_tx, state.general_config
