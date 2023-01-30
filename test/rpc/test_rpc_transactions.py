@@ -19,16 +19,20 @@ from test.shared import (
     INCORRECT_GENESIS_BLOCK_HASH,
     PREDEPLOYED_ACCOUNT_ADDRESS,
     PREDEPLOYED_ACCOUNT_PRIVATE_KEY,
+    PREDEPLOY_ACCOUNT_CLI_ARGS,
     STARKNET_CLI_ACCOUNT_ABI_PATH,
     SUPPORTED_RPC_TX_VERSION,
 )
-from test.util import assert_tx_status, call, deploy, load_contract_class, mint, send_tx
+
+from test.util import assert_tx_status, call, deploy, devnet_in_background, load_contract_class, mint, send_tx
 from typing import List
 
 import pytest
 from starkware.starknet.core.os.transaction_hash.transaction_hash import (
     calculate_declare_transaction_hash,
 )
+from starkware.starknet.definitions.error_codes import StarknetErrorCode
+
 from starkware.starknet.definitions.general_config import (
     DEFAULT_CHAIN_ID,
     StarknetChainId,
@@ -52,7 +56,6 @@ from starknet_devnet.blueprints.rpc.structures.payloads import (
 from starknet_devnet.blueprints.rpc.structures.types import Signature, rpc_txn_type
 from starknet_devnet.blueprints.rpc.utils import rpc_felt
 from starknet_devnet.constants import LEGACY_RPC_TX_VERSION
-
 
 def pad_zero_entry_points(entry_points: EntryPoints) -> None:
     """
@@ -423,6 +426,7 @@ def test_add_invoke_transaction():
     initial_balance, amount1, amount2 = 100, 13, 56
     deploy_dict = deploy(CONTRACT_PATH, [str(initial_balance)])
     contract_address = deploy_dict["address"]
+    max_fee = int(1e18)
 
     calls = [(contract_address, "increase_balance", [amount1, amount2])]
     signature, execute_calldata = get_execute_args(
@@ -431,12 +435,12 @@ def test_add_invoke_transaction():
         private_key=PREDEPLOYED_ACCOUNT_PRIVATE_KEY,
         nonce=0,
         version=SUPPORTED_RPC_TX_VERSION,
-        max_fee=0,
+        max_fee=max_fee,
     )
 
     invoke_transaction = RpcBroadcastedInvokeTxnV1(
         type="INVOKE",
-        max_fee=rpc_felt(0),
+        max_fee=rpc_felt(max_fee),
         version=hex(SUPPORTED_RPC_TX_VERSION),
         signature=[rpc_felt(sig) for sig in signature],
         nonce=rpc_felt(get_nonce(PREDEPLOYED_ACCOUNT_ADDRESS)),
@@ -460,6 +464,90 @@ def test_add_invoke_transaction():
     assert is_felt(receipt["transaction_hash"])
     assert storage == hex(initial_balance + amount1 + amount2)
 
+@pytest.mark.usefixtures("devnet_with_account")
+def test_add_invoke_transaction_with_max_fee_0():
+    """
+    Add invoke transaction
+    """
+    initial_balance, amount1, amount2 = 100, 13, 56
+    deploy_dict = deploy(CONTRACT_PATH, [str(initial_balance)])
+    contract_address = deploy_dict["address"]
+    max_fee = 0
+
+    calls = [(contract_address, "increase_balance", [amount1, amount2])]
+    signature, execute_calldata = get_execute_args(
+        calls=calls,
+        account_address=PREDEPLOYED_ACCOUNT_ADDRESS,
+        private_key=PREDEPLOYED_ACCOUNT_PRIVATE_KEY,
+        nonce=0,
+        version=SUPPORTED_RPC_TX_VERSION,
+        max_fee=max_fee,
+    )
+
+    invoke_transaction = RpcBroadcastedInvokeTxnV1(
+        type="INVOKE",
+        max_fee=rpc_felt(max_fee),
+        version=hex(SUPPORTED_RPC_TX_VERSION),
+        signature=[rpc_felt(sig) for sig in signature],
+        nonce=rpc_felt(get_nonce(PREDEPLOYED_ACCOUNT_ADDRESS)),
+        sender_address=rpc_felt(PREDEPLOYED_ACCOUNT_ADDRESS),
+        calldata=[rpc_felt(data) for data in execute_calldata],
+    )
+
+    resp = rpc_call(
+        "starknet_addInvokeTransaction",
+        params={"invoke_transaction": invoke_transaction},
+    )
+    assert resp['code'] == f"{StarknetErrorCode.OUT_OF_RANGE_FEE}"
+
+@devnet_in_background(
+    *PREDEPLOY_ACCOUNT_CLI_ARGS,
+    "--allow-max-fee-zero"
+)
+def test_add_invoke_transaction_with_max_fee_0_and_allow_max_fee_zero():
+    """
+    Add invoke transaction
+    """
+    initial_balance, amount1, amount2 = 100, 13, 56
+    deploy_dict = deploy(CONTRACT_PATH, [str(initial_balance)])
+    contract_address = deploy_dict["address"]
+    max_fee = int(0)
+
+    calls = [(contract_address, "increase_balance", [amount1, amount2])]
+    signature, execute_calldata = get_execute_args(
+        calls=calls,
+        account_address=PREDEPLOYED_ACCOUNT_ADDRESS,
+        private_key=PREDEPLOYED_ACCOUNT_PRIVATE_KEY,
+        nonce=0,
+        version=SUPPORTED_RPC_TX_VERSION,
+        max_fee=max_fee,
+    )
+
+    invoke_transaction = RpcBroadcastedInvokeTxnV1(
+        type="INVOKE",
+        max_fee=rpc_felt(max_fee),
+        version=hex(SUPPORTED_RPC_TX_VERSION),
+        signature=[rpc_felt(sig) for sig in signature],
+        nonce=rpc_felt(get_nonce(PREDEPLOYED_ACCOUNT_ADDRESS)),
+        sender_address=rpc_felt(PREDEPLOYED_ACCOUNT_ADDRESS),
+        calldata=[rpc_felt(data) for data in execute_calldata],
+    )
+
+    resp = rpc_call(
+        "starknet_addInvokeTransaction",
+        params={"invoke_transaction": invoke_transaction},
+    )
+    receipt = resp["result"]
+
+    storage = gateway_call(
+        "get_storage_at",
+        contractAddress=contract_address,
+        key=get_storage_var_address("balance"),
+    )
+
+    assert set(receipt.keys()) == {"transaction_hash"}
+    assert is_felt(receipt["transaction_hash"])
+    assert storage == hex(initial_balance + amount1 + amount2)
 
 @pytest.mark.usefixtures("run_devnet_in_background")
 def test_add_invoke_transaction_v0():
