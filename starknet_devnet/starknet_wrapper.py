@@ -435,7 +435,11 @@ class StarknetWrapper:
     async def invoke(self, external_tx: InvokeFunction):
         """Perform invoke according to specifications in `transaction`."""
         state = self.get_state()
-        if external_tx.version != LEGACY_RPC_TX_VERSION and external_tx.max_fee == 0 and not self.config.allow_max_fee_zero:
+        if (
+            external_tx.version != LEGACY_RPC_TX_VERSION
+            and external_tx.max_fee == 0
+            and not self.config.allow_max_fee_zero
+        ):
             raise StarknetDevnetException(
                 code=StarknetErrorCode.OUT_OF_RANGE_FEE,
                 message=f"max_fee == 0 is not supported.",

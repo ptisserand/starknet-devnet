@@ -94,7 +94,7 @@ def test_invoking_another_contract():
     deploy_info = deploy_empty_contract()
     account_address = deploy_account_contract(salt=SALT)["address"]
     to_address = deploy_info["address"]
-    
+
     # add funds to new account
     mint(account_address, max_fee)
 
@@ -243,7 +243,7 @@ def test_multicall():
 
     # add funds to new account
     mint(account_address, max_fee)
-    
+
     # execute increase_balance calls
     calls = [
         (to_address, "increase_balance", [10, 20]),
