@@ -17,6 +17,7 @@ from test.shared import (
     ABI_PATH,
     CONTRACT_PATH,
     INCORRECT_GENESIS_BLOCK_HASH,
+    MAX_FEE,
     PREDEPLOYED_ACCOUNT_ADDRESS,
     PREDEPLOYED_ACCOUNT_PRIVATE_KEY,
     PREDEPLOY_ACCOUNT_CLI_ARGS,
@@ -426,7 +427,7 @@ def test_add_invoke_transaction():
     initial_balance, amount1, amount2 = 100, 13, 56
     deploy_dict = deploy(CONTRACT_PATH, [str(initial_balance)])
     contract_address = deploy_dict["address"]
-    max_fee = int(1e18)
+    max_fee = MAX_FEE
 
     calls = [(contract_address, "increase_balance", [amount1, amount2])]
     signature, execute_calldata = get_execute_args(
@@ -511,7 +512,7 @@ def test_add_invoke_transaction_with_max_fee_0_and_allow_max_fee_zero():
     initial_balance, amount1, amount2 = 100, 13, 56
     deploy_dict = deploy(CONTRACT_PATH, [str(initial_balance)])
     contract_address = deploy_dict["address"]
-    max_fee = int(0)
+    max_fee = 0
 
     calls = [(contract_address, "increase_balance", [amount1, amount2])]
     signature, execute_calldata = get_execute_args(
