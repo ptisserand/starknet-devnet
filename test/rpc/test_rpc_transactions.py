@@ -17,7 +17,6 @@ from test.shared import (
     ABI_PATH,
     CONTRACT_PATH,
     INCORRECT_GENESIS_BLOCK_HASH,
-    MAX_FEE,
     PREDEPLOY_ACCOUNT_CLI_ARGS,
     PREDEPLOYED_ACCOUNT_ADDRESS,
     PREDEPLOYED_ACCOUNT_PRIVATE_KEY,
@@ -142,10 +141,12 @@ def test_get_transaction_by_hash_declare():
     """
     Get transaction by hash
     """
+    max_fee = int(4e16)
     declare_info = declare(
         contract_path=CONTRACT_PATH,
         account_address=PREDEPLOYED_ACCOUNT_ADDRESS,
         private_key=PREDEPLOYED_ACCOUNT_PRIVATE_KEY,
+        max_fee=max_fee,
     )
 
     block = get_block_with_transaction(declare_info["tx_hash"])
@@ -434,7 +435,7 @@ def test_add_invoke_transaction():
     initial_balance, amount1, amount2 = 100, 13, 56
     deploy_dict = deploy(CONTRACT_PATH, [str(initial_balance)])
     contract_address = deploy_dict["address"]
-    max_fee = MAX_FEE
+    max_fee = int(4e16)
 
     calls = [(contract_address, "increase_balance", [amount1, amount2])]
     signature, execute_calldata = get_execute_args(
@@ -633,6 +634,7 @@ def test_add_declare_transaction(declare_content):
     """
     contract_class = declare_content["contract_class"]
     pad_zero_entry_points(contract_class["entry_points_by_type"])
+    max_fee = int(4e16)
 
     rpc_contract_class = RpcContractClass(
         program=contract_class["program"],
@@ -645,7 +647,7 @@ def test_add_declare_transaction(declare_content):
         contract_class=load_contract_class(CONTRACT_PATH),
         chain_id=StarknetChainId.TESTNET.value,
         sender_address=int(PREDEPLOYED_ACCOUNT_ADDRESS, 16),
-        max_fee=0,
+        max_fee=max_fee,
         nonce=nonce,
         version=SUPPORTED_RPC_TX_VERSION,
     )
@@ -653,7 +655,7 @@ def test_add_declare_transaction(declare_content):
 
     declare_transaction = RpcBroadcastedDeclareTxn(
         type=declare_content["type"],
-        max_fee=rpc_felt(declare_content["max_fee"]),
+        max_fee=rpc_felt(max_fee),
         version=hex(SUPPORTED_RPC_TX_VERSION),
         signature=[rpc_felt(sig) for sig in signature],
         nonce=rpc_felt(nonce),

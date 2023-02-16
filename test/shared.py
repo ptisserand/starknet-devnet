@@ -63,5 +63,3 @@ EXPECTED_UDC_ADDRESS = (
 ALPHA_MAINNET_URL = "https://alpha-mainnet.starknet.io"
 ALPHA_GOERLI_URL = "https://alpha4.starknet.io"
 ALPHA_GOERLI2_URL = "https://alpha4-2.starknet.io"
-
-MAX_FEE = int(4e16)

@@ -19,7 +19,6 @@ from .shared import (
     ABI_PATH,
     CONTRACT_PATH,
     EVENTS_CONTRACT_PATH,
-    MAX_FEE,
     PREDEPLOY_ACCOUNT_CLI_ARGS,
     PREDEPLOYED_ACCOUNT_ADDRESS,
     PREDEPLOYED_ACCOUNT_PRIVATE_KEY,
@@ -90,7 +89,7 @@ def test_account_contract_deploy():
 @devnet_in_background()
 def test_invoking_another_contract():
     """Test invoking another contract through a newly deployed (not predeployed) account."""
-    max_fee = MAX_FEE
+    max_fee = int(4e16)
     deploy_info = deploy_empty_contract()
     account_address = deploy_account_contract(salt=SALT)["address"]
     to_address = deploy_info["address"]
@@ -236,7 +235,7 @@ def test_insufficient_balance():
 @devnet_in_background()
 def test_multicall():
     """Test making multiple calls."""
-    max_fee = MAX_FEE
+    max_fee = int(4e16)
     deploy_info = deploy_empty_contract()
     account_address = deploy_account_contract(salt=SALT)["address"]
     to_address = deploy_info["address"]
