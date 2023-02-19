@@ -306,19 +306,17 @@ class StarknetWrapper:
                 self.preserved_block_info = starknet_wrapper._update_block_number()
 
             def _check_tx_fee(self, transaction):
-                try:
-                    if (
-                        transaction.version != LEGACY_TX_VERSION
-                        and transaction.max_fee == 0
-                        and not self.starknet_wrapper.config.allow_max_fee_zero
-                    ):
-                        raise StarknetDevnetException(
-                            code=StarknetErrorCode.OUT_OF_RANGE_FEE,
-                            message="max_fee == 0 is not supported.",
-                        )
-                except AttributeError:
-                    # tx without 'max_fee'
-                    pass
+                if not hasattr(transaction, "max_fee"):
+                    return
+                if (
+                    transaction.version != LEGACY_TX_VERSION
+                    and transaction.max_fee == 0
+                    and not self.starknet_wrapper.config.allow_max_fee_zero
+                ):
+                    raise StarknetDevnetException(
+                        code=StarknetErrorCode.OUT_OF_RANGE_FEE,
+                        message="max_fee == 0 is not supported.",
+                    )
 
             async def __aenter__(self):
                 self._check_tx_fee(external_tx)
