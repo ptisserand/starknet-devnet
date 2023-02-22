@@ -62,7 +62,11 @@ from .block_info_generator import BlockInfoGenerator
 from .blocks import DevnetBlocks
 from .blueprints.rpc.structures.types import BlockId, Felt
 from .chargeable_account import ChargeableAccount
-from .constants import DUMMY_STATE_ROOT, LEGACY_TX_VERSION, STARKNET_CLI_ACCOUNT_CLASS_HASH
+from .constants import (
+    DUMMY_STATE_ROOT,
+    LEGACY_TX_VERSION,
+    STARKNET_CLI_ACCOUNT_CLASS_HASH,
+)
 from .devnet_config import DevnetConfig
 from .fee_token import FeeToken
 from .forked_state import get_forked_starknet

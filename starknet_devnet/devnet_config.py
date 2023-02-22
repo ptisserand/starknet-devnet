@@ -272,7 +272,7 @@ def parse_args(raw_args: List[str]):
     parser.add_argument(
         "--allow-max-fee-zero",
         action="store_true",
-        help="Allow transaction with max fee equal zero",
+        help="Allow transactions with max fee equal to zero",
     )
     parser.add_argument(
         "--timeout",

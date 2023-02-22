@@ -22,7 +22,7 @@ from .util import (
 
 @devnet_in_background(*PREDEPLOY_ACCOUNT_CLI_ARGS)
 def test_invoke_with_max_fee_0():
-    """Test that invoke transaction with max fee 0 will failed"""
+    """Test that invoke transaction with max fee 0 will fail"""
     initial_balance = 100
     deploy_info = deploy(CONTRACT_PATH, [str(initial_balance)])
     account_address = PREDEPLOYED_ACCOUNT_ADDRESS
@@ -46,7 +46,7 @@ def test_invoke_with_max_fee_0_and_allow_max_fee_zero():
 
 @devnet_in_background()
 def test_declare_with_max_fee_0():
-    """Test that declare transaction with max fee 0 will failed"""
+    """Test that declare transaction with max fee 0 will fail"""
     with ErrorExpector(StarknetErrorCode.OUT_OF_RANGE_FEE):
         declare(
             contract_path=CONTRACT_PATH,

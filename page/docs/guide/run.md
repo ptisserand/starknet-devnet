@@ -36,7 +36,7 @@ optional arguments:
                         Specify the start time of the genesis block in Unix time seconds
   --gas-price GAS_PRICE, -g GAS_PRICE
                         Specify the gas price in wei per gas unit; defaults to 1e+11
-  --allow-max-fee-zero  Allow transaction with max fee equal zero
+  --allow-max-fee-zero  Allow transactions with max fee equal to zero
   --timeout TIMEOUT, -t TIMEOUT
                         Specify the server timeout in seconds; defaults to 60
   --account-class ACCOUNT_CLASS
